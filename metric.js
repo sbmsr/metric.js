@@ -25,6 +25,23 @@ app.get('/', function (req, res) {
 
 /*
 
+      ~ GET (/api/metrics) : Retrieve all metrics
+
+      ~ No input expected
+
+      ~ JSON output
+        - "status" : http result status code (int)
+        - "metrics" : collection of all metrics (dictionary)
+
+*/
+
+app.get('/api/metrics', function (req, res, next) {
+  res.status(200).json(db)
+  return next()
+})
+
+/*
+
       ~ POST (/api/metrics) : Creates new metrics
 
       ~ Expected JSON input
@@ -37,10 +54,10 @@ app.get('/', function (req, res) {
 
  */
 
-app.post('/api/metrics', function (req, res) {
+app.post('/api/metrics', function (req, res, next) {
   if (!("name" in req.body)) {
     res.status(400).json({"status": 400 , "message" : "Bad request ; missing \"name\""});
-    return
+    return next()
   }
 
   var req = req.body
@@ -58,12 +75,12 @@ app.post('/api/metrics', function (req, res) {
 
     if (values.constructor !== Array) {
       res.status(400).json({"status": 400 , "message" : "Bad request ; values should be of type Array"});
-      return
+      return next()
     }
 
     if (values.some(isNaN)) {
       res.status(400).json({"status": 400 , "message" : "Bad request ; values should all be numeric"});
-      return
+      return next()
     }
 
     max = values[0]
@@ -95,73 +112,20 @@ app.post('/api/metrics', function (req, res) {
 
   lastID += 1
 
-  console.log(db)
-
   res.status(200).json({ "status": 200 , "id" : id});
+  return next()
 })
 
-/*
-
-      ~ GET (/api/metrics/:id) : gets summary statistics for
-                                 metric with id = :id
-
-      ~ No input expected
-
-*/
-
-app.get('/api/metrics/:id', function (req, res) {
-  var id = req.params.id
-
+function idParamIsValid(id) {
   if (isNaN(id)) {
-    res.status(400).json({"status": 400 , "message" : "Bad request ; id should be numeric"});
-    return
+    return false
   } else { // know its a number, but is it an int?
     if (id % 1 !== 0) { // does it have remainder?
-      res.status(400).json({"status" : 400, "message" : "Bad Request ; id should be int"})
-      return
+      return false
     }
-  }
+  } return true
+}
 
-  id = id.toString()
-
-  if (!(id in db)) {
-    res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"})
-    return
-  }
-
-  var metric = db[id]
-
-  if (metric.values.length === 0) {
-    res.status(400).json({"status" : 400, "message" : "Metric is empty ; Insert some values first."})
-    return
-  }
-
-  var min = metric.min
-  var max = metric.max
-  var med = metric.med.val
-  var mean = metric.sum/metric.values.length
-
-  if (!metric.med.isValid) {
-    med = calculateMedian(metric.values)
-    db[id].med.isValid = true
-  }
-
-  var JSONres = {
-    "status": 200,
-    "summary_statistics" :
-    {
-      "min" : min,
-      "max" : max,
-      "med" : med,
-      "mean" : mean
-    }
-  }
-
-  JSONres = JSON.stringify(JSONres)
-
-  res.status(200).json(JSONres)
-  return
-})
 
 function calculateMedian(values) {
   if (values.length === 0) {
@@ -182,6 +146,131 @@ function calculateMedian(values) {
   return median
 }
 
-app.post('/api/metrics/:id', function (req, res) {
-  
+/*
+
+      ~ GET (/api/metrics/:id) : gets summary statistics for
+                                 metric with id == :id
+
+      ~ No input expected
+
+      ~ JSON output
+        - status : http result status code (int)
+        - summary_statistics : dictionary containing min,
+                               max, median, and mean
+
+*/
+
+app.get('/api/metrics/:id', function (req, res, next) {
+  var id = req.params.id
+
+  if (!idParamIsValid(id)) {
+    res.status(400).json({"status" : 400, "message" : "Bad Request ; id should be int"})
+    return next()
+  }
+
+  id = id.toString()
+
+  if (!(id in db)) {
+    res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"})
+    return next()
+  }
+
+  var metric = db[id]
+
+  if (metric.values.length === 0) {
+    res.status(400).json({"status" : 400, "message" : "Metric is empty ; Insert some values first."})
+    return next()
+  }
+
+  var min = metric.min
+  var max = metric.max
+  var med = metric.med.val
+  var mean = metric.sum/metric.values.length
+
+  if (!metric.med.isValid) {
+    med = calculateMedian(metric.values)
+    db[id].med.isValid = true
+  }
+
+  var resObj = {
+    "status": 200,
+    "summary_statistics" :
+    {
+      "min" : min,
+      "max" : max,
+      "med" : med,
+      "mean" : mean
+    }
+  }
+
+  res.status(200).json(resObj)
+  return next()
+})
+
+/*
+
+      ~ POST (/api/metrics/:id) : post value to metric with id == :id
+
+      ~ Expected JSON input
+        - value (number)
+
+      ~ JSON output
+        - "status" : http result status code (int)
+          - 400 : push failed (read message for details)
+          - 200 : push successful
+
+*/
+
+app.post('/api/metrics/:id', function (req, res, next) {
+
+  if (!("value" in req.body)) {
+    res.status(400).json({"status": 400 , "message" : "Bad request ; missing \"value\""});
+    return next()
+  }
+
+  var val = req.body.value
+  var id = req.params.id
+
+  if (!idParamIsValid(id)) {
+    res.status(400).json({"status" : 400, "message" : "Bad Request ; id should be int."})
+    return next()
+  }
+
+  if (!(id in db)) {
+    res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"})
+    return next()
+  }
+
+  var metric = db[id]
+
+  metric.values.push(val)
+
+  metric.sum += val
+
+  if (metric.min === null) { // first val being added, so min is null
+    metric.min = val
+  } else {
+    if (metric.min > val) {
+      metric.min = val
+    }
+  }
+
+  if (metric.max === null) { // first val being added, so max is null
+    metric.max = val
+  } else {
+    if (metric.max < val) {
+      metric.max = val
+    }
+  }
+
+  if (metric.med.isValid) { // median is no longer valid
+    metric.med.isValid = false
+  }
+
+  db[id] = metric
+
+  var resObj = {"status": 200}
+
+  res.status(200).json(resObj)
+  return next()
 })
