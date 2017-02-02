@@ -1,0 +1,29 @@
+{
+  "name": "metrics",
+  "version": "0.0.1",
+  "description": "",
+  "main": "metric.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "body-parser": "^1.16.0",
+    "express": "^4.14.1"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/r3ticuli/metric.js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/r3ticuli/metric.js/issues"
+  },
+  "homepage": "https://github.com/r3ticuli/metric.js#readme"
+}

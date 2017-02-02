@@ -36,7 +36,7 @@ app.get('/', function (req, res) {
 */
 
 app.get('/api/metrics', function (req, res, next) {
-  res.status(200).json(db)
+  res.status(200).json({status:"200", metrics: db})
   return next()
 })
 
