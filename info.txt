@@ -1,7 +1,18 @@
 === Setup ===
 
+MacOS/Bash
 
-=== File Structure ===
+  Assuming node and npm are installed . . .
+
+    1) go to root application directory
+    2) run "npm install"
+      - this will install all dependencies
+    3) run "node metric"
+    4) The app is now running! You can query it at localhost:3000/
+
+Read on for more info!
+
+=== File Structure (after Setup) ===
 
 .
 ├── info.txt            (what you're reading right now)
@@ -39,6 +50,7 @@ To send requests to the node server I use curl as follows
 Here are some example commands :
 
 1) creating metrics (POSTs to /api/metrics)
+
     A) a metric named "AAPL"
 
         curl -H "Content-Type: application/json" -d '{"name" : "AAPL"}' localhost:3000/api/metrics
@@ -47,9 +59,11 @@ Here are some example commands :
 
         curl -H "Content-Type: application/json" -d '{"name" : "AAPL", "values" : [1,2,3,4]}' localhost:3000/api/metrics
 
-2) viewing the state of the DB (only one way to do this)
+2) viewing the state of the DB
 
     A) curl localhost:3000/api/metrics
+
+    B) You can also view the state of the DB via your browser by visiting localhost:3000/api/metrics
 
 3) inserting values into a metric (only one way to do this)
 
@@ -62,6 +76,8 @@ Here are some example commands :
     A) get summary stats for metric with id == n (assuming a metric at id {n} exists . . .)
 
       curl localhost:3000/api/metrics/{n}
+
+
 
 === Possible App Questions ===
 
@@ -84,11 +100,13 @@ isValid to true.
 
 === Testing ===
 
+To run the tests simply go to the app root folder and run "npm test", after
+setup of course.
+
 I used mocha + supertest for endpoint testing. As of yet I managed to test the
 creation of metrics (suite 1) and the retrieval of the db (suite 2). The
 retrieval of summary stats was tested by hand (i know i know), as was the
-posting of values to metrics. To run the tests simply go to the app root folder
-and run "npm test".
+posting of values to metrics.
 
 The program passes 25 tests, and has 2 undefined test suites, one for
 each part of the app I failed to write unit tests for. The app fails on my json
