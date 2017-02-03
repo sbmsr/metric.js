@@ -16,19 +16,19 @@ to do for now.
 
 function makeServer() {
 
-  var express = require('express')
+  var express = require('express');
   var bodyParser = require('body-parser');
-  var app = express()
-  var port = 3000
+  var app = express();
+  var port = 3000;
 
   app.use(bodyParser.json()); // for parsing application/json
 
-  var db = {}
-  var lastID = 0
+  var db = {};
+  var lastID = 0;
 
   app.get('/', function (req, res) {
-    res.send('<h1>Welcome to Metric.js</h1>')
-  })
+    res.send('<h1>Welcome to Metric.js</h1>');
+  });
 
   /*
 
@@ -49,9 +49,9 @@ function makeServer() {
   */
 
   app.get('/api/metrics', function (req, res, next) {
-    res.json({status:"200", metrics: db})
-    return next()
-  })
+    res.json({status:"200", metrics: db});
+    return next();
+  });
 
   /*
 
@@ -77,41 +77,41 @@ function makeServer() {
   app.post('/api/metrics', function (req, res, next) {
     if (!("name" in req.body)) {
       res.status(400).json({"status": 400 , "message" : "Bad request ; missing \"name\""});
-      return next()
+      return next();
     }
 
-    var req = req.body
+    var body = req.body;
 
-    var name = req["name"]
-    var values = []
-    var max = null
-    var min = null
-    var sum = null
-    var med = null
-    var isValid = false
+    var name = body.name;
+    var values = [];
+    var max = null;
+    var min = null;
+    var sum = null;
+    var med = null;
+    var isValid = false;
 
-    if ("values" in req && req["values"].length != 0) {
-      values = req["values"]
+    if ("values" in body && body.values.length !== 0) {
+      values = body.values;
 
       if (values.constructor !== Array) {
         res.status(400).json({"status": 400 , "message" : "Bad request ; values should be of type Array"});
-        return next()
+        return next();
       }
 
       if (values.some(isNaN)) {
         res.status(400).json({"status": 400 , "message" : "Bad request ; values should all be numeric"});
-        return next()
+        return next();
       }
 
-      max = values[0]
-      min = values[0]
-      sum = 0
-      med = values[0]
+      max = values[0];
+      min = values[0];
+      sum = 0;
+      med = values[0];
 
       for (var i = 0; i < values.length; i++) {
-        sum += values[i]
-        if (max < values[i]) max = values[i]
-        if (min > values[i]) min = values[i]
+        sum += values[i];
+        if (max < values[i]) max = values[i];
+        if (min > values[i]) min = values[i];
       }
     }
 
@@ -125,45 +125,45 @@ function makeServer() {
         'val' : med,          // median metric value
         'isValid' : isValid   // is median valid?
       }
-    }
+    };
 
-    var id = lastID.toString()
-    db[id] = metric
+    var id = lastID.toString();
+    db[id] = metric;
 
-    lastID += 1
+    lastID += 1;
 
     res.status(200).json({ "status": 200 , "id" : id});
-    return next()
-  })
+    return next();
+  });
 
   function idParamIsValid(id) {
     if (isNaN(id)) {
-      return false
+      return false;
     } else { // know its a number, but is it an int?
       if (id % 1 !== 0) { // does it have remainder?
-        return false
+        return false;
       }
-    } return true
+    } return true;
   }
 
 
   function calculateMedian(values) {
     if (values.length === 0) {
-      return null
+      return null;
     }
 
-    var median = null
-    var midpoint = values.length/2
-    values = values.sort()
+    var median = null;
+    var midpoint = values.length/2;
+    values = values.sort();
 
     if (values.length % 2 === 0) {
-      median = (values[midpoint] + values[midpoint-1])/2
+      median = (values[midpoint] + values[midpoint-1])/2;
     } else {
-      midpoint = Math.floor(midpoint)
-      median = values[midpoint]
+      midpoint = Math.floor(midpoint);
+      median = values[midpoint];
     }
 
-    return median
+    return median;
   }
 
   /*
@@ -189,35 +189,35 @@ function makeServer() {
   */
 
   app.get('/api/metrics/:id', function (req, res, next) {
-    var id = req.params.id
+    var id = req.params.id;
 
     if (!idParamIsValid(id)) {
-      res.status(400).json({"status" : 400, "message" : "Bad Request ; id should be int"})
-      return next()
+      res.status(400).json({"status" : 400, "message" : "Bad Request ; id should be int"});
+      return next();
     }
 
-    id = id.toString()
+    id = id.toString();
 
     if (!(id in db)) {
-      res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"})
-      return next()
+      res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"});
+      return next();
     }
 
-    var metric = db[id]
+    var metric = db[id];
 
     if (metric.values.length === 0) {
-      res.status(400).json({"status" : 400, "message" : "Metric is empty ; Insert some values first."})
-      return next()
+      res.status(400).json({"status" : 400, "message" : "Metric is empty ; Insert some values first."});
+      return next();
     }
 
-    var min = metric.min
-    var max = metric.max
-    var med = metric.med.val
-    var mean = metric.sum/metric.values.length
+    var min = metric.min;
+    var max = metric.max;
+    var med = metric.med.val;
+    var mean = metric.sum/metric.values.length;
 
     if (!metric.med.isValid) {
-      med = calculateMedian(metric.values)
-      db[id].med.isValid = true
+      med = calculateMedian(metric.values);
+      db[id].med.isValid = true;
     }
 
     var resObj = {
@@ -229,11 +229,11 @@ function makeServer() {
         "med" : med,
         "mean" : mean
       }
-    }
+    };
 
-    res.status(200).json(resObj)
-    return next()
-  })
+    res.status(200).json(resObj);
+    return next();
+  });
 
   /*
 
@@ -261,57 +261,57 @@ function makeServer() {
 
     if (!("value" in req.body)) {
       res.status(400).json({"status": 400 , "message" : "Bad request ; missing \"value\""});
-      return next()
+      return next();
     }
 
-    var val = req.body.value
-    var id = req.params.id
+    var val = req.body.value;
+    var id = req.params.id;
 
     if (!idParamIsValid(id)) {
-      res.status(400).json({"status" : 400, "message" : "Bad Request ; id should be int."})
-      return next()
+      res.status(400).json({"status" : 400, "message" : "Bad Request ; id should be int."});
+      return next();
     }
 
     if (!(id in db)) {
-      res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"})
-      return next()
+      res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"});
+      return next();
     }
 
-    var metric = db[id]
+    var metric = db[id];
 
-    metric.values.push(val)
+    metric.values.push(val);
 
-    metric.sum += val
+    metric.sum += val;
 
     if (metric.min === null) { // first val being added, so min is null
-      metric.min = val
+      metric.min = val;
     } else {
       if (metric.min > val) {
-        metric.min = val
+        metric.min = val;
       }
     }
 
     if (metric.max === null) { // first val being added, so max is null
-      metric.max = val
+      metric.max = val;
     } else {
       if (metric.max < val) {
-        metric.max = val
+        metric.max = val;
       }
     }
 
     if (metric.med.isValid) { // median is no longer valid
-      metric.med.isValid = false
+      metric.med.isValid = false;
     }
 
-    db[id] = metric
+    db[id] = metric;
 
-    var resObj = {"status": 200}
+    var resObj = {"status": 200};
 
-    res.status(200).json(resObj)
-    return next()
-  })
+    res.status(200).json(resObj);
+    return next();
+  });
 
-  var server = app.listen(port)
+  var server = app.listen(port);
 
   return server;
 }

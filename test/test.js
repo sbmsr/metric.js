@@ -90,9 +90,7 @@ describe('verifying insertion for metrics', function() {
   // Value Pushing Tests
 
 
-  it('', function(done) {
-
-  });
+  it('');
 });
 
 // 3. Summary statistic calculations
@@ -103,7 +101,5 @@ describe('verifying insertion for metrics', function() {
 
 
 describe('verifying summary statistic calculations for metrics', function() {
-  it('', function(done) {
-
-  });
+  it('');
 });
