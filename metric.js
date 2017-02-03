@@ -5,7 +5,6 @@ var app = express()
 var port = 3000
 
 app.use(bodyParser.json()); // for parsing application/json
-
 app.listen(port)
 
 /*
@@ -36,7 +35,7 @@ app.get('/', function (req, res) {
 */
 
 app.get('/api/metrics', function (req, res, next) {
-  res.status(200).json({status:"200", metrics: db})
+  res.json({status:"200", metrics: db})
   return next()
 })
 
@@ -70,7 +69,7 @@ app.post('/api/metrics', function (req, res, next) {
   var med = null
   var isValid = false
 
-  if ("values" in req) {
+  if ("values" in req && req["values"].length != 0) {
     values = req["values"]
 
     if (values.constructor !== Array) {
