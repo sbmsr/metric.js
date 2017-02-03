@@ -104,13 +104,21 @@ To run the tests simply go to the app root folder and run "npm test", after
 setup of course.
 
 I used mocha + supertest for endpoint testing. As of yet I managed to test the
-creation of metrics (suite 1) and the retrieval of the db (suite 2). The
-retrieval of summary stats was tested by hand (i know i know), as was the
-posting of values to metrics.
+creation of metrics (suite 1), the retrieval of the db (suite 2), and value
+insertion (suite 3). The retrieval of summary stats was tested by hand (i know
+i know).
 
-The program passes 25 tests, and has 2 undefined test suites, one for
-each part of the app I failed to write unit tests for. The app fails on my json
-response test. The app should be returning JSON, but instead returns "text/html;
+The program passes 39 tests, fails one, and has 1 undefined test suite (for the
+part of the app I failed to write unit tests for, of course). The app fails on
+my json response test. The app should be returning JSON, but instead returns "text/html;
 charset=utf-8". The express endpoints should be returning proper JSON headers
 via the res.json() calls, as specified here (https://expressjs.com/en/api.html#res.json),
 but I can't seem to figure out why my tests detect otherwise.
+
+=== Final Notes ===
+
+1) Unit testing a webapp is something I've never done before. It was probably the
+hardest part of this challenge.
+
+2) The structure of the code could certainly be improved. Ideally I would separate
+my routes from the main app, but I didn't due to time constraints. Sorry about that.

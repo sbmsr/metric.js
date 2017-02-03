@@ -1,5 +1,5 @@
 var request = require('supertest');
-var data = require('./data')
+var data = require('./data');
 
 /*
 
@@ -128,11 +128,6 @@ describe('verifying insertion for metrics', function() {
 });
 
 // 3. Summary statistic calculations
-
-  // Summary Statistic Queries
-
-  // Summary Statistic Tests
-
 
 describe('verifying summary statistic calculations for metrics', function() {
   it('');
