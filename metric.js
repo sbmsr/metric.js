@@ -93,7 +93,7 @@ app.post('/api/metrics', function (req, res, next) {
       return next();
     }
 
-    if (values.some(isNaN)) {
+    if (values.some(!(is))) {
       res.status(400).json({"status": 400 , "message" : "Bad request ; values should all be numeric"});
       return next();
     }
@@ -253,6 +253,12 @@ app.get('/api/metrics/:id', function (req, res, next) {
 
 */
 
+// courtesy of http://stackoverflow.com/a/1830844/2465644
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 app.post('/api/metrics/:id', function (req, res, next) {
 
   if (!("value" in req.body)) {
@@ -270,6 +276,11 @@ app.post('/api/metrics/:id', function (req, res, next) {
 
   if (!(id in db)) {
     res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"});
+    return next();
+  }
+
+  if (!isNumeric(val)){
+    res.status(400).json({"status": 400 , "message" : "Bad request ; values should all be numeric"});
     return next();
   }
 

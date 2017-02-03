@@ -33,6 +33,10 @@
     {"jsonInput" : {"name" : "1", "values" : [0.0,-0,2,123.113]},  "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "1", "values" : [0.0,0,2,123.113], "max" : 123.113, "min" : 0, "sum" : 125.113, "med" : {"val" : 0, "isValid" : false}}}}}
   ],
 
-  "emptyMetric" : {"status": 200, "metrics":{}}
+  "emptyMetric" : {"status": 200, "metrics":{}},
+
+  "invalidInputValues" : ["a", "", null, {}, []],
+
+  "validInputValues" : [1, 2, 2.1312414124124, 4.0, -0, 1412, -124124, -12451.12512123]
 
 }
