@@ -23,7 +23,6 @@ function makeServer() {
 
   app.use(bodyParser.json()); // for parsing application/json
 
-
   var db = {};
   var lastID = 0;
 
@@ -99,7 +98,7 @@ function makeServer() {
         return next();
       }
 
-      if (values.some(isNaN)) {
+      if (values.some(!(is))) {
         res.status(400).json({"status": 400 , "message" : "Bad request ; values should all be numeric"});
         return next();
       }

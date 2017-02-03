@@ -4,6 +4,7 @@ MacOS/Bash
 
   Assuming node and npm are installed . . .
 
+    0) git clone the repo (https://github.com/r3ticuli/metric.js.git)
     1) go to root application directory
     2) run "npm install"
       - this will install all dependencies
