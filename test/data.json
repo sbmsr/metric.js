@@ -1,0 +1,39 @@
+{
+
+  "invalidInitMetricQueries" : [
+    {"jsonInput" : {"name" : 0},                                     "expected" : 400},
+    {"jsonInput" : {"name" : null},                                  "expected" : 400},
+    {"jsonInput" : {"cow" : "0"},                                    "expected" : 400},
+    {"jsonInput" : {},                                               "expected" : 400},
+    {"jsonInput" : {"names" : "undefined"},                          "expected" : 400},
+    {"jsonInput" : {"name" : "0", "values" : [[0,1,2,3]]},           "expected" : 400},
+    {"jsonInput" : {"name" : "", "values" : "hello"},                "expected" : 400},
+    {"jsonInput" : {"name" : "test", "values" : [0,1,2,"3", "NaN"]}, "expected" : 400}
+  ],
+
+  "validInitMetricQueries2" : [
+    {"jsonInput" : {"name" : "0"},                                 "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "0", "values" : [], "max" : null, "min" : null, "sum" : null, "med" : {"val" : null, "isValid" : false}}}}},
+    {"jsonInput" : {"name" : ""},                                  "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "", "values" : [], "max" : null, "min" : null, "sum" : null, "med" : {"val" : null, "isValid" : false}}}}},
+    {"jsonInput" : {"name" : "test"},                              "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "test", "values" : [], "max" : null, "min" : null, "sum" : null, "med" : {"val" : null, "isValid" : false}}}}},
+    {"jsonInput" : {"name" : "0", "values" : []},                  "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "0", "values" : [], "max" : null, "min" : null, "sum" : null, "med" : {"val" : null, "isValid" : false}}}}},
+    {"jsonInput" : {"values" : [], "name" : "0"},                  "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "0", "values" : [], "max" : null, "min" : null, "sum" : null, "med" : {"val" : null, "isValid" : false}}}}},
+    {"jsonInput" : {"name" : "1", "values" : [0]},                 "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "1", "values" : [0], "max" : 0, "min" : 0, "sum" : 0, "med" : {"val" : 0, "isValid" : false}}}}},
+    {"jsonInput" : {"name" : "1", "values" : [0,2,3,4]},           "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "1", "values" : [0,2,3,4], "max" : 4, "min" : 0, "sum" : 9, "med" : {"val" : 0, "isValid" : false}}}}},
+    {"jsonInput" : {"name" : "1", "values" : [0.0,-0,2,123.113]},  "expectedResult" : {"status" : "200", "metrics" : {"0" :{"name" : "1", "values" : [0.0,0,2,123.113], "max" : 123.113, "min" : 0, "sum" : 125.113, "med" : {"val" : 0, "isValid" : false}}}}}
+  ],
+
+  "validInitMetricQueries" : [
+    {"jsonInput" : {"name" : "0"},                                 "expected" : 200},
+    {"jsonInput" : {"name" : ""},                                  "expected" : 200},
+    {"jsonInput" : {"name" : "test"},                              "expected" : 200},
+    {"jsonInput" : {"name" : "0", "values" : []},                  "expected" : 200},
+    {"jsonInput" : {"values" : [], "name" : "0"},                  "expected" : 200},
+    {"jsonInput" : {"name" : "1", "values" : [0]},                 "expected" : 200},
+    {"jsonInput" : {"name" : "1", "values" : [0,2,3,4]},           "expected" : 200},
+    {"jsonInput" : {"name" : "1", "values" : [0.0,-0,2,123.113]},  "expected" : 200}
+  ],
+
+
+  "emptyMetric" : {"status": 200, "metrics":{}}
+
+}
