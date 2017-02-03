@@ -1,3 +1,19 @@
+/*
+
+This is a "testable" version of metric.js. This version wraps the instantiation
+of a server into a single function call, which terminates upon reaching the end
+of the file. This was done according to the instructions found here :
+(https://glebbahmutov.com/blog/how-to-correctly-unit-test-express-server/).
+
+This version basically permits us to restart the node app in between tests,
+otherwise the DB continues to propogate metric insertions, which makes the
+expected json output more and more complicated, and thus harder to match,
+on each successive test. There is certainly a smarter way, but this will have
+to do for now.
+
+*/
+
+
 function makeServer() {
 
   var express = require('express')
@@ -7,18 +23,7 @@ function makeServer() {
 
   app.use(bodyParser.json()); // for parsing application/json
 
-
-
-
-  /*
-    decided to keep unordered list. Reasoning is as follows :
-    we are likely gonna push values more than we are gonna request statistics.
-    thus, we want pushes to be "faster".
-    - ordered lists have O(n) pushes, but O(1) statistics.
-    - unordered lists have O(1) pushes, but O(n) statistics.
-  */
-
-  var db = app.db = {}
+  var db = {}
   var lastID = 0
 
   app.get('/', function (req, res) {
@@ -27,13 +32,19 @@ function makeServer() {
 
   /*
 
-        ~ GET (/api/metrics) : Retrieve all metrics
+  ~ GET (/api/metrics) : Retrieve all metrics
 
-        ~ No input expected
+  ~ No input expected
 
-        ~ JSON output
-          - "status" : http result status code (int)
-          - "metrics" : collection of all metrics (dictionary)
+  ~ JSON output
+    - "status" : http result status code (int)
+    - "metrics" : collection of all metrics (dictionary)
+
+  ~ Expected Runtime : O(n)
+    - printing dictionary of size n
+
+  ~ Expected Space : N/A
+    - memory is unaltered when this function is called
 
   */
 
@@ -44,17 +55,24 @@ function makeServer() {
 
   /*
 
-        ~ POST (/api/metrics) : Creates new metrics
+  ~ POST (/api/metrics) : Creates new metrics
 
-        ~ Expected JSON input
-          - name (string)
-          - (optional) values ([numbers])
+  ~ Expected JSON input
+    - name (string)
+    - (optional) values ([numbers])
 
-        ~ JSON output
-          - "status" : http result status code (int)
-          - "id"     : id of newly created metric (string)
+  ~ JSON output
+    - "status" : http result status code (int)
+    - "id"     : id of newly created metric (string)
 
-   */
+  ~ Expected Runtime : O(n)
+    - input of size n is parsed (max/min/sum are computed in one pass),
+      and then inserted into a dictionary (a constant time operation)
+
+  ~ Expected Space : O(n)
+    - input of size n is stored
+
+  */
 
   app.post('/api/metrics', function (req, res, next) {
     if (!("name" in req.body)) {
@@ -150,15 +168,23 @@ function makeServer() {
 
   /*
 
-        ~ GET (/api/metrics/:id) : gets summary statistics for
-                                   metric with id == :id
+  ~ GET (/api/metrics/:id) : gets summary statistics for metric with id == :id
 
-        ~ No input expected
+  ~ No input expected
 
-        ~ JSON output
-          - status : http result status code (int)
-          - summary_statistics : dictionary containing min,
-                                 max, median, and mean
+  ~ JSON output
+    - status : http result status code (int)
+    - summary_statistics : dictionary containing min, max, median, and mean
+
+  ~ Expected Runtime : O(n)
+    - the only calculation is the median computation, which uses
+      Array.sort(). The impl. by Mozilla (presumably used in Node), relies on
+      mergesort (source : http://stackoverflow.com/a/234808/2465644), which
+      has expected runtime O(n log n)
+
+  ~ Expected Space : O(n)
+    - assuming mergesort, the median computation requires another array of
+      size n to sort the initial array.
 
   */
 
@@ -211,15 +237,23 @@ function makeServer() {
 
   /*
 
-        ~ POST (/api/metrics/:id) : post value to metric with id == :id
+  ~ POST (/api/metrics/:id) : post value to metric with id == :id
 
-        ~ Expected JSON input
-          - value (number)
+  ~ Expected JSON input
+    - value (number)
 
-        ~ JSON output
-          - "status" : http result status code (int)
-            - 400 : push failed (read message for details)
-            - 200 : push successful
+  ~ JSON output
+    - "status" : http result status code (int)
+    - 400 : push failed (read message for details)
+    - 200 : push successful
+
+  ~ Expected Runtime : O(1)
+    - when inserting a new value, we check its relationship with the min,
+      the max, and add it to the sum, all of which are constant time ops.
+
+  ~ Expected Space : O(1)
+    - only one new element is added, so we need one more array slot for said
+      element.
 
   */
 

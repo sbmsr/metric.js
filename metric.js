@@ -1,19 +1,22 @@
+
+/*
+
+  Design Decisions :
+  Decided to keep unordered list for metric vals. Reasoning is as follows :
+    - we are likely gonna push values more than we are gonna request statistics.
+      thus, we want pushes to be "faster".
+      - ordered lists have pushes running at O(n), but O(1) statistics.
+      - unordered lists have pushes running at O(1), but O(n) statistics.
+*/
+
 var express = require('express')
-var bodyParser = require('body-parser');
+var bodyParser = require('body-parser'); // for parsing application/json
 var app = express()
 
 var port = 3000
 
-app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.json());
 app.listen(port)
-
-/*
-  decided to keep unordered list. Reasoning is as follows :
-  we are likely gonna push values more than we are gonna request statistics.
-  thus, we want pushes to be "faster".
-  - ordered lists have O(n) pushes, but O(1) statistics.
-  - unordered lists have O(1) pushes, but O(n) statistics.
-*/
 
 var db = {}
 var lastID = 0
@@ -24,13 +27,19 @@ app.get('/', function (req, res) {
 
 /*
 
-      ~ GET (/api/metrics) : Retrieve all metrics
+~ GET (/api/metrics) : Retrieve all metrics
 
-      ~ No input expected
+~ No input expected
 
-      ~ JSON output
-        - "status" : http result status code (int)
-        - "metrics" : collection of all metrics (dictionary)
+~ JSON output
+  - "status" : http result status code (int)
+  - "metrics" : collection of all metrics (dictionary)
+
+~ Expected Runtime : O(n)
+  - printing dictionary of size n
+
+~ Expected Space : N/A
+  - memory is unaltered when this function is called
 
 */
 
@@ -41,17 +50,24 @@ app.get('/api/metrics', function (req, res, next) {
 
 /*
 
-      ~ POST (/api/metrics) : Creates new metrics
+~ POST (/api/metrics) : Creates new metrics
 
-      ~ Expected JSON input
-        - name (string)
-        - (optional) values ([numbers])
+~ Expected JSON input
+  - name (string)
+  - (optional) values ([numbers])
 
-      ~ JSON output
-        - "status" : http result status code (int)
-        - "id"     : id of newly created metric (string)
+~ JSON output
+  - "status" : http result status code (int)
+  - "id"     : id of newly created metric (string)
 
- */
+~ Expected Runtime : O(n)
+  - input of size n is parsed (max/min/sum are computed in one pass),
+    and then inserted into a dictionary (a constant time operation)
+
+~ Expected Space : O(n)
+  - input of size n is stored
+
+*/
 
 app.post('/api/metrics', function (req, res, next) {
   if (!("name" in req.body)) {
@@ -147,15 +163,23 @@ function calculateMedian(values) {
 
 /*
 
-      ~ GET (/api/metrics/:id) : gets summary statistics for
-                                 metric with id == :id
+~ GET (/api/metrics/:id) : gets summary statistics for metric with id == :id
 
-      ~ No input expected
+~ No input expected
 
-      ~ JSON output
-        - status : http result status code (int)
-        - summary_statistics : dictionary containing min,
-                               max, median, and mean
+~ JSON output
+  - status : http result status code (int)
+  - summary_statistics : dictionary containing min, max, median, and mean
+
+~ Expected Runtime : O(n)
+  - the only calculation is the median computation, which uses
+    Array.sort(). The impl. by Mozilla (presumably used in Node), relies on
+    mergesort (source : http://stackoverflow.com/a/234808/2465644), which
+    has expected runtime O(n log n)
+
+~ Expected Space : O(n)
+  - assuming mergesort, the median computation requires another array of
+    size n to sort the initial array.
 
 */
 
@@ -208,15 +232,23 @@ app.get('/api/metrics/:id', function (req, res, next) {
 
 /*
 
-      ~ POST (/api/metrics/:id) : post value to metric with id == :id
+~ POST (/api/metrics/:id) : post value to metric with id == :id
 
-      ~ Expected JSON input
-        - value (number)
+~ Expected JSON input
+  - value (number)
 
-      ~ JSON output
-        - "status" : http result status code (int)
-          - 400 : push failed (read message for details)
-          - 200 : push successful
+~ JSON output
+  - "status" : http result status code (int)
+  - 400 : push failed (read message for details)
+  - 200 : push successful
+
+~ Expected Runtime : O(1)
+  - when inserting a new value, we check its relationship with the min,
+    the max, and add it to the sum, all of which are constant time ops.
+
+~ Expected Space : O(1)
+  - only one new element is added, so we need one more array slot for said
+    element.
 
 */
 

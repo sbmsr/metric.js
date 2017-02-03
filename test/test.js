@@ -3,11 +3,14 @@ var data = require('./data')
 
 /*
 
-Webserver does 4 things :
-  1) Create metrics
-  2) Retrieve Metrics
-  2) Push values to metrics
-  3) Calculate summary statistics
+  Webserver does 4 things :
+    1) Create metrics
+    2) Retrieve Metrics
+    2) Push values to metrics
+    3) Calculate summary statistics
+
+  Each test suite examines the functionality
+  of each of these attributes above.
 
 */
 
@@ -62,7 +65,7 @@ describe('verifying metric retrieval', function() {
       .expect(200, data.emptyMetric, done)
   })
 
-  data.validInitMetricQueries2.forEach(function(query){
+  data.validGetAllMetricsQueries.forEach(function(query){
     var queryString = JSON.stringify(query.jsonInput)
     it('obtains correct db after init query : ' + queryString, function(done) {
       request(app)
