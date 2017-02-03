@@ -196,14 +196,14 @@ function makeServer() {
       return next();
     }
 
-    id = id.toString();
+    var idString = id.toString();
 
-    if (!(id in db)) {
+    if (!(idString in db)) {
       res.status(400).json({"status" : 400, "message" : "Bad Request ; id not in db"});
       return next();
     }
 
-    var metric = db[id];
+    var metric = db[idString];
 
     if (metric.values.length === 0) {
       res.status(400).json({"status" : 400, "message" : "Metric is empty ; Insert some values first."});
@@ -217,7 +217,8 @@ function makeServer() {
 
     if (!metric.med.isValid) {
       med = calculateMedian(metric.values);
-      db[id].med.isValid = true;
+      db[idString].med.isValid = true;
+      db[idString].med.val = med;
     }
 
     var resObj = {

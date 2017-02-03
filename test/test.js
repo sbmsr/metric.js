@@ -90,6 +90,13 @@ describe('verifying insertion for metrics', function() {
   // Value Pushing Tests
 
 
+  it('fails to insert for nonexistent metrics', function (){
+    for(var i = 0; i < 10; i++) {
+      request(app)
+        .post('/api/metrics/:i')
+        .expect(400)
+    }
+  });
   it('');
 });
 

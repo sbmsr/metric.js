@@ -1,0 +1,98 @@
+=== Setup ===
+
+
+=== File Structure ===
+
+.
+├── info.txt            (what you're reading right now)
+├── metric.js           (main app file)
+├── metric_testable.js  (testable app file (read comment at top of file for more info))
+├── node_modules        (dependencies folder)
+├── package.json        (node app specification)
+└── test                (tests folder)
+    ├── data.json       (json test data)
+    └── test.js         (unit tests)
+
+
+=== App Rundown ===
+
+The app relies on express.js for api endpoints, and relies on a js dictionary
+as a "db". The DB structure is as follows :
+
+{
+	"ID": {               (ID of metric) (string)
+		"NAME": "XXX",      (Name of metric) (string)
+		"values": [...],    (Values contained in metric) (numeric)
+ 		"max": XXX,         (Max val of metric) (numeric)
+		"min": XXX,         (Min val of metric) (numeric)
+		"sum": XXX,         (Sum val of metric) (numeric)
+		"med": {
+			"val": XXX,       (Median val of metric) (numeric)
+			"isValid": XXX    (Is median value valid?) (boolean)
+		}
+	} . . .
+}
+
+=== Performing HTTP Requests ===
+
+To send requests to the node server I use curl as follows
+Here are some example commands :
+
+1) creating metrics (POSTs to /api/metrics)
+    A) a metric named "AAPL"
+
+        curl -H "Content-Type: application/json" -d '{"name" : "AAPL"}' localhost:3000/api/metrics
+
+    B) a metric named "AAPL", with initial values of [1,2,3,4]
+
+        curl -H "Content-Type: application/json" -d '{"name" : "AAPL", "values" : [1,2,3,4]}' localhost:3000/api/metrics
+
+2) viewing the state of the DB (only one way to do this)
+
+    A) curl localhost:3000/api/metrics
+
+3) inserting values into a metric (only one way to do this)
+
+    A) inserting a value of 1 into metric with id == n (assuming a metric at id {n} exists . . .)
+
+      curl -H "Content-Type: application/json" -d '{"value": 1}' localhost:3000/api/metrics/{n}
+
+4) retrieving summary statistics (only one way to do this)
+
+    A) get summary stats for metric with id == n (assuming a metric at id {n} exists . . .)
+
+      curl localhost:3000/api/metrics/{n}
+
+=== Possible App Questions ===
+
+Q : Why store sum, not mean?
+A : We store the sum in order to compute the mean with runtime O(1), since
+javascript arrays contain a length property. Just divide sum by length property
+and voila. This beats O(n) alternative of storing the mean, which would require
+us to recompute the mean each time it is queried.
+
+Q : What is isValid about?
+A : The median is the only summary statistic which can't be retrieved in constant
+time. As a result, we avoid computing it until the summary statistics for a given
+metric are queried. Once that happens, we check to see if the current value is
+valid ("isValid" == true). If it isn't, compute it. If it is, simply return
+"val". This permits successive calls for the query statistic of a metric to be
+constant time, since the median isn't changing. However, once a value is added
+to the metric, the median will have shifted. We set isValid to false, and once
+a new call for the summary statistic occurs, we recompute it as before, and set
+isValid to true.
+
+=== Testing ===
+
+I used mocha + supertest for endpoint testing. As of yet I managed to test the
+creation of metrics (suite 1) and the retrieval of the db (suite 2). The
+retrieval of summary stats was tested by hand (i know i know), as was the
+posting of values to metrics. To run the tests simply go to the app root folder
+and run "npm test".
+
+The program passes 25 tests, and has 2 undefined test suites, one for
+each part of the app I failed to write unit tests for. The app fails on my json
+response test. The app should be returning JSON, but instead returns "text/html;
+charset=utf-8". The express endpoints should be returning proper JSON headers
+via the res.json() calls, as specified here (https://expressjs.com/en/api.html#res.json),
+but I can't seem to figure out why my tests detect otherwise.
