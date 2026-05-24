@@ -98,7 +98,7 @@ function makeServer() {
         return next();
       }
 
-      if (values.some(!(is))) {
+      if (values.some(x => (!isNumeric(x)))) {
         res.status(400).json({"status": 400 , "message" : "Bad request ; values should all be numeric"});
         return next();
       }
